@@ -29,7 +29,7 @@ export function UsersClient() {
         isOpen={open} 
         onClose={() => setOpen(false)}
       />
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-8 gap-y-4 sm:justify-between justify-center flex-wrap">
         <h2 className="text-3xl font-bold tracking-tight">Kullanıcılar</h2>
         <Button onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />

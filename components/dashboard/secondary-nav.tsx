@@ -1,7 +1,6 @@
 "use client"
 
-import { usePathname, useRouter } from 'next/navigation'
-import { cn } from "@/lib/utils"
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -11,8 +10,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
+import { logout } from "@/app/actions/auth"
 import { User } from 'lucide-react'
+import { MobileSidebar } from "./mobile-sidebar"
 
 interface SecondaryNavProps {
     user: {
@@ -22,81 +22,58 @@ interface SecondaryNavProps {
     }
 }
 
-import { logout } from "@/app/actions/auth"
-
-const pageTranslations: { [key: string]: string } = {
-    'dashboard': 'Kontrol Paneli',
-    'projects': 'Projeler',
-    'tasks': 'Görevler',
-    'users': 'Kullanıcılar',
-}
-
 export default function SecondaryNav({ user }: SecondaryNavProps) {
     const router = useRouter()
-    const pathname = usePathname()
 
     const handleLogout = async () => {
-        router.push('/login')
-        await logout()
-    }
-
-    const getPageIndicator = () => {
-        const parts = pathname.split('/').filter(Boolean)
-        return (
-            <div className="flex items-center text-sm">
-                {parts.map((part, index) => (
-                    <span key={index} className="flex items-center">
-                        {index > 0 && <span className="text-muted-foreground mx-1.5">/</span>}
-                        <span className={cn(
-                            index === parts.length - 1 ? "text-foreground" : "text-muted-foreground"
-                        )}>
-                            {pageTranslations[part] || part.charAt(0).toUpperCase() + part.slice(1)}
-                        </span>
-                    </span>
-                ))}
-            </div>
-        )
+        try {
+            await logout()
+            router.push('/login')
+        } catch (error) {
+            console.error('Logout error:', error)
+        }
     }
 
     return (
-        <nav className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
-            <div className="w-full mx-auto px-4">
-                <div className="flex justify-between items-center py-2">
-                    {getPageIndicator()}
-                    <div className="flex items-center space-x-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <User className="h-5 w-5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end" forceMount>
-                                <DropdownMenuLabel className="font-normal">
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            {user.name}
-                                            {user.role === 1 && (
-                                                <span className="ml-2 text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                                                    Admin
-                                                </span>
-                                            )}
-                                        </p>
-                                        <p className="text-xs leading-none text-muted-foreground">
-                                            {user.email}
-                                        </p>
-                                    </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className='cursor-pointer'
-                                    onClick={handleLogout}
-                                >
-                                    Çıkış Yap
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+        <header className="sticky top-0 z-40 border-b bg-background">
+            <div className="w-full flex h-16 items-center justify-between px-8 pr-4">
+                <div className="flex items-center gap-4">
+                    <MobileSidebar user={user} />
                 </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <User className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-60" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm break-words font-medium leading-none">
+                                    {user.name}
+                                </p>
+
+                                <p className="text-xs break-all w-full text-muted-foreground">
+                                    {user.email}
+                                </p>
+                                {user.role === 1 && (
+                                    <div>
+                                        <span className=" text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                                            Admin
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className='cursor-pointer'
+                            onClick={handleLogout}
+                        >
+                            Çıkış Yap
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
-        </nav>
+        </header>
     )
 }
